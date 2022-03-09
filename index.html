@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>basic multiplanar</title>
+    <style>
+      section {
+        margin: 20px;
+      }
+    </style>
+  </head>
+  <body style="font-family: sans-serif;">
+    <noscript>
+      <strong>niivue doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+
+    <section>
+      <h1>
+        NiiVue
+      </h1>
+    </section>
+
+    <section>
+      <div id="demo" style="width:90%; height:400px;">
+        <canvas id="gl" height=480 width=640>
+        </canvas>
+      </div>
+    </section>
+    <script src="https://unpkg.com/@niivue/niivue@0.22.2/dist/niivue.umd.js">
+    </script>
+    <script>
+
+			// parse query params from the URL (the FLASK app supplied this).
+			// NiiVue has no access to files on the system when used in a normal web browser
+			// so the backend (FLASK) must supply the niivue URLs. Then Niivue asks the server 
+			// for those files. It may seem a bit circular, but it's necessary because
+			// browsers are locked down, and can't browse the file system, but the python flask app can. 
+			// In an Electron app this is not as much an issue. 
+			// EXAMPLE URL: http://localhost:8888/?host=localhost&port=8888&files=/Users/taylor/github/pyniivue/mni152.nii.gz:/Users/taylor/github/pyniivue/hippo.nii.gz
+			let urlParams = new URLSearchParams(window.location.search)
+  		let files = urlParams.get('files')
+			let host = urlParams.get('host')
+			let port = urlParams.get('port')
+			// can't give an array as a query param, but we can 
+			// give a long string and use ':' as a file separator
+			let inFiles = files.split(':') // now turn the files string into an array
+			// create an empty array that we will fill
+			let volumeList = []
+			// some colors to randomly assign to overlays.
+			// the background will always be gray in this demo.
+			// the background will always be the first image in the supplied images. 
+			let colors = ['red', 'green', 'blue']
+			for (i=0; i<inFiles.length; i++) {
+				volumeList.push({
+					url: `http://${host}:${port}/files?filename=${inFiles[i]}`,
+					// background image will be gray, all overlays will be a random color of red, green, blue
+					colorMap: i < 1 ? 'gray' : colors[Math.floor(Math.random() * (3 - 0) + 0)]
+				})
+			}
+      const nv = new niivue.Niivue()
+      nv.attachTo('gl')
+      nv.loadVolumes(volumeList)
+      nv.setSliceType(nv.sliceTypeMultiplanar)
+
+    </script>
+  </body>
+</html>
+

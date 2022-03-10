@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 import sys
 import os
 import socket
@@ -24,12 +25,20 @@ def files():
     return send_file(file, as_attachment=True)
 
 def main():
+    parser = ArgumentParser(description='app for viewing nifti images')
+    # Required
+    parser.add_argument('files', nargs='+', help='Files to view')
+    # Optional
+    parser.add_argument(
+        '--port', type=int, default=8888,
+        help='Port to try to use. Default 8888.'
+    )
+    args = parser.parse_args()
     host = 'localhost'
-    port = 8888 # any port you want that does not require root access
-    in_files = sys.argv[1:] # all command line arguments are considered files that the user would like to open
+    port = int(args.port)
+    in_files = args.files
     in_files_abs = [os.path.abspath(f) for f in in_files] # make sure we have the absolute path for each file
 
-    #webbrowser.open(url) uncomment to open automatically in your default browser. Will not work if done within WSL
     while True:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if sock.connect_ex(('127.0.0.1', port)):

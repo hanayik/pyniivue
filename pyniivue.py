@@ -1,5 +1,6 @@
 import sys
 import os
+import socket
 import webbrowser
 from flask import Flask, send_file, request
 
@@ -28,8 +29,16 @@ if __name__ == '__main__':
     in_files = sys.argv[1:] # all command line arguments are considered files that the user would like to open
     in_files_abs = [os.path.abspath(f) for f in in_files] # make sure we have the absolute path for each file
 
-    # construct the URL to print in the console. The user will navigate to this URL in their browser
-    url = f"http://{host}:{port}/?host={host}&port={port}&files={':'.join(in_files_abs)}"
-    print('COPY THIS URL TO YOUR BROWSER: ', url)
     #webbrowser.open(url) uncomment to open automatically in your default browser. Will not work if done within WSL
-    app.run(host, port, debug=False)
+    while True:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if sock.connect_ex(('127.0.0.1', port)):
+            sock.close()
+        else:
+            port += 1
+            continue
+        # construct the URL to print in the console. The user will navigate to this URL in their browser
+        url = f"http://{host}:{port}/?host={host}&port={port}&files={':'.join(in_files_abs)}"
+        print('COPY THIS URL TO YOUR BROWSER: ', url)
+        app.run(host, port, debug=False)
+        sys.exit(0)

@@ -40,5 +40,6 @@ if __name__ == '__main__':
         # construct the URL to print in the console. The user will navigate to this URL in their browser
         url = f"http://{host}:{port}/?host={host}&port={port}&files={':'.join(in_files_abs)}"
         print('COPY THIS URL TO YOUR BROWSER: ', url)
+        webbrowser.open(url)
         app.run(host, port, debug=False)
         sys.exit(0)

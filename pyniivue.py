@@ -23,7 +23,7 @@ def files():
     file = request.args.get('filename')
     return send_file(file, as_attachment=True)
 
-if __name__ == '__main__':
+def main():
     host = 'localhost'
     port = 8888 # any port you want that does not require root access
     in_files = sys.argv[1:] # all command line arguments are considered files that the user would like to open
@@ -43,3 +43,6 @@ if __name__ == '__main__':
         webbrowser.open(url)
         app.run(host, port, debug=False)
         sys.exit(0)
+
+if __name__ == '__main__':
+    main()

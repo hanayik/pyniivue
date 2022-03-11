@@ -1,5 +1,7 @@
+from argparse import ArgumentParser
 import sys
 import os
+import socket
 import webbrowser
 from flask import Flask, send_file, request
 
@@ -22,14 +24,39 @@ def files():
     file = request.args.get('filename')
     return send_file(file, as_attachment=True)
 
-if __name__ == '__main__':
+def main():
+    parser = ArgumentParser(description='app for viewing nifti images')
+    # Required
+    parser.add_argument('files', nargs='+', help='Files to view')
+    # Optional
+    parser.add_argument(
+        '--port', type=int, default=8888,
+        help='Port to try to use. Default 8888.'
+    )
+    parser.add_argument(
+        '-n', '--no-open', action='store_true', dest='no_open',
+        help='Do not automatically open the link'
+    )
+    args = parser.parse_args()
     host = 'localhost'
-    port = 8888 # any port you want that does not require root access
-    in_files = sys.argv[1:] # all command line arguments are considered files that the user would like to open
+    port = int(args.port)
+    in_files = args.files
     in_files_abs = [os.path.abspath(f) for f in in_files] # make sure we have the absolute path for each file
 
-    # construct the URL to print in the console. The user will navigate to this URL in their browser
-    url = f"http://{host}:{port}/?host={host}&port={port}&files={':'.join(in_files_abs)}"
-    print('COPY THIS URL TO YOUR BROWSER: ', url)
-    #webbrowser.open(url) uncomment to open automatically in your default browser. Will not work if done within WSL
-    app.run(host, port, debug=False)
+    while True:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if sock.connect_ex(('127.0.0.1', port)):
+            sock.close()
+        else:
+            port += 1
+            continue
+        # construct the URL to print in the console. The user will navigate to this URL in their browser
+        url = f"http://{host}:{port}/?host={host}&port={port}&files={':'.join(in_files_abs)}"
+        print('COPY THIS URL TO YOUR BROWSER: ', url)
+        if not args.no_open:
+            webbrowser.open(url)
+        app.run(host, port, debug=False)
+        sys.exit(0)
+
+if __name__ == '__main__':
+    main()

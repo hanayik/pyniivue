@@ -24,6 +24,17 @@ def files():
     file = request.args.get('filename')
     return send_file(file, as_attachment=True)
 
+
+def prelude():
+    """Returns the prelude for the index page
+
+    Returns
+    -------
+    prelude: str, the doctype prelude
+    """
+    return "<!DOCTYPE html>"
+
+
 def head(title="basic multiplanar", initial_scale=1.0, margin=20):
     """Generates a page header
 
@@ -73,8 +84,7 @@ def index():
     page: str
         A string representing the HTML index page
     """
-    page = """
-<!DOCTYPE html>
+    page = prelude() + """
 <html lang="en">
 """
     page += head()
@@ -123,7 +133,7 @@ def index():
 </html>
     """
     # Trim off extra characters
-    return page[1:-4] + '\n'
+    return page[:-4] + '\n'
 
 
 def main():

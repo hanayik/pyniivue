@@ -11,6 +11,13 @@ os.environ["WERKZEUG_RUN_MAIN"] = "true"
 # create an app instance
 app = Flask(__name__)
 
+# module-wide variables for some defaults
+DEFAULT_FONT_STYLE = {'font-family': 'sans-serif'}
+DEFAULT_NOSCRIPT_MESSAGE = (
+    "niivue doesn't work properly without JavaScript enabled. "
+    "Please enable it to continue."
+)
+
 # create the index route (default page)
 @app.route("/")
 def index():
@@ -69,13 +76,78 @@ def html(head, body, language="en"):
     """
     return (
         f'<html lang="{language}">\n'
-        + indent(head)
-        + '\n'
-        + indent(body)
-        + '\n'
+        + indent(head) + '\n'
+        + indent(body) + '\n'
         + '</html>\n'
     )
 
+
+def dict2stylestr(tostyle):
+    """Converts a dictionary into a style-compatible string
+
+    Parameters
+    ----------
+    tostyle: dict
+        The dictionary to create a style-string from
+
+    Returns
+    -------
+    styled: str, the string representation of style arguments
+    """
+    return ' '.join(f"{k}: {v};" for k, v in tostyle.items())
+
+
+def body(contents, style=DEFAULT_FONT_STYLE):
+    """"Create the page body with optional style argument
+
+    Parameters
+    ----------
+    style: dict
+        A dict where each style argument also has a key indicating its
+        value. Default is the module default, set in pyniivue.py
+
+    Returns
+    -------
+    body: str, the string representation of the page body
+    """
+    return (
+        f'<body style="{dict2stylestr(style)}">\n'
+        + indent(contents) + '\n'
+        + '</body>' + '\n'
+    )
+
+
+def strong(content):
+    """Embed content in strong tags
+
+    Parameters
+    ----------
+    content: str
+        The content to embed in strong tags
+
+    Returns
+    -------
+    strengthened: str, the strong-tagged content
+    """
+    return f'<strong>{content}</strong>'
+
+
+def noscript(message, emphasize=True):
+    """Generates the noscript block
+
+    Parameters
+    ----------
+    message: str
+        The message to show users with noscript
+
+    Returns
+    -------
+    block: str, the string representation of the noscript block
+    """
+    if emphasize:
+        message = strong(message)
+    message = indent(message)
+    return f'<noscript>\n{message}\n</noscript>'
 
 
 def head(title="basic multiplanar", initial_scale=1.0, margin=20):
@@ -126,48 +198,44 @@ def index():
     page: str
         A string representing the HTML index page
     """
-    page = prelude() + html(head(), """
-<body style="font-family: sans-serif;">
-  <noscript>
-    <strong>niivue doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
-  </noscript>
+    page = prelude() + html(head(), body(
+        noscript(DEFAULT_NOSCRIPT_MESSAGE) + """
 
-  <section>
-    <h1>
-      NiiVue
-    </h1>
-  </section>
+<section>
+  <h1>
+    NiiVue
+  </h1>
+</section>
 
-  <section>
-    <div id="demo" style="width:90%; height:400px;">
-      <canvas id="gl" height=480 width=640>
-      </canvas>
-    </div>
-  </section>
-  <script src="https://unpkg.com/@niivue/niivue@0.22.2/dist/niivue.umd.js">
-  </script>
-  <script>
+<section>
+  <div id="demo" style="width:90%; height:400px;">
+    <canvas id="gl" height=480 width=640>
+    </canvas>
+  </div>
+</section>
+<script src="https://unpkg.com/@niivue/niivue@0.22.2/dist/niivue.umd.js">
+</script>
+<script>
 
-                  let urlParams = new URLSearchParams(window.location.search)
-          let files = urlParams.get('files')
-                  let host = urlParams.get('host')
-                  let port = urlParams.get('port')
-                  let inFiles = files.split(':')
-                  let volumeList = []
-                  let colors = ['red', 'green', 'blue']
-                  for (i=0; i<inFiles.length; i++) {
-                          volumeList.push({
-                                  url: `http://${host}:${port}/files?filename=${inFiles[i]}`,
-                                  colorMap: i < 1 ? 'gray' : colors[Math.floor(Math.random() * (3 - 0) + 0)]
-                          })
-                  }
-    const nv = new niivue.Niivue()
-    nv.attachTo('gl')
-    nv.loadVolumes(volumeList)
-    nv.setSliceType(nv.sliceTypeMultiplanar)
+                let urlParams = new URLSearchParams(window.location.search)
+        let files = urlParams.get('files')
+                let host = urlParams.get('host')
+                let port = urlParams.get('port')
+                let inFiles = files.split(':')
+                let volumeList = []
+                let colors = ['red', 'green', 'blue']
+                for (i=0; i<inFiles.length; i++) {
+                        volumeList.push({
+                                url: `http://${host}:${port}/files?filename=${inFiles[i]}`,
+                                colorMap: i < 1 ? 'gray' : colors[Math.floor(Math.random() * (3 - 0) + 0)]
+                        })
+                }
+  const nv = new niivue.Niivue()
+  nv.attachTo('gl')
+  nv.loadVolumes(volumeList)
+  nv.setSliceType(nv.sliceTypeMultiplanar)
 
-  </script>
-</body>""")
+</script>"""))
     return page
 
 

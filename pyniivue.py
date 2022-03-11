@@ -25,6 +25,23 @@ def files():
     return send_file(file, as_attachment=True)
 
 
+def indent(content, spaces=2):
+    """Indents content by one level using *gasp* spaces
+
+    Parameters
+    ----------
+    content: str
+        The string contents to indent
+
+    Returns
+    -------
+    indented: str, the indented content
+    """
+    return '\n'.join(
+        [' '*spaces + l for l in content.splitlines() if not l == '']
+    )
+
+
 def prelude():
     """Returns the prelude for the index page
 
@@ -32,7 +49,33 @@ def prelude():
     -------
     prelude: str, the doctype prelude
     """
-    return "<!DOCTYPE html>"
+    return "<!DOCTYPE html>\n"
+
+def html(head, body, language="en"):
+    """Creates the html section
+
+    Parameters
+    ----------
+    head: str
+        The contents of the head
+    body: str
+        The contents of the body
+    language: str
+        The language for the page, default "en"
+
+    Returns
+    -------
+    html: str, the html section
+    """
+    return (
+        f'<html lang="{language}">\n'
+        + indent(head)
+        + '\n'
+        + indent(body)
+        + '\n'
+        + '</html>\n'
+    )
+
 
 
 def head(title="basic multiplanar", initial_scale=1.0, margin=20):
@@ -56,23 +99,22 @@ def head(title="basic multiplanar", initial_scale=1.0, margin=20):
     # - TITLE
     # - MARGIN
     headstr =  """
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,initial-scale=INITIAL_SCALE">
-    <title>TITLE</title>
-    <style>
-      section {
-        margin: MARGINpx;
-      }
-    </style>
-  </head>
-    """
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=INITIAL_SCALE">
+  <title>TITLE</title>
+  <style>
+    section {
+      margin: MARGINpx;
+    }
+  </style>
+</head>"""
     headstr = headstr.replace("INITIAL_SCALE", str(initial_scale))
     headstr = headstr.replace("TITLE", title)
     headstr = headstr.replace("MARGIN", str(margin))
     print(headstr)
-    return headstr[1:-5]
+    return headstr[1:]
 
 
 # The virtual representation of the HTML page
@@ -84,56 +126,49 @@ def index():
     page: str
         A string representing the HTML index page
     """
-    page = prelude() + """
-<html lang="en">
-"""
-    page += head()
-    page += """
-  <body style="font-family: sans-serif;">
-    <noscript>
-      <strong>niivue doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
-    </noscript>
+    page = prelude() + html(head(), """
+<body style="font-family: sans-serif;">
+  <noscript>
+    <strong>niivue doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+  </noscript>
 
-    <section>
-      <h1>
-        NiiVue
-      </h1>
-    </section>
+  <section>
+    <h1>
+      NiiVue
+    </h1>
+  </section>
 
-    <section>
-      <div id="demo" style="width:90%; height:400px;">
-        <canvas id="gl" height=480 width=640>
-        </canvas>
-      </div>
-    </section>
-    <script src="https://unpkg.com/@niivue/niivue@0.22.2/dist/niivue.umd.js">
-    </script>
-    <script>
+  <section>
+    <div id="demo" style="width:90%; height:400px;">
+      <canvas id="gl" height=480 width=640>
+      </canvas>
+    </div>
+  </section>
+  <script src="https://unpkg.com/@niivue/niivue@0.22.2/dist/niivue.umd.js">
+  </script>
+  <script>
 
-                    let urlParams = new URLSearchParams(window.location.search)
-            let files = urlParams.get('files')
-                    let host = urlParams.get('host')
-                    let port = urlParams.get('port')
-                    let inFiles = files.split(':')
-                    let volumeList = []
-                    let colors = ['red', 'green', 'blue']
-                    for (i=0; i<inFiles.length; i++) {
-                            volumeList.push({
-                                    url: `http://${host}:${port}/files?filename=${inFiles[i]}`,
-                                    colorMap: i < 1 ? 'gray' : colors[Math.floor(Math.random() * (3 - 0) + 0)]
-                            })
-                    }
-      const nv = new niivue.Niivue()
-      nv.attachTo('gl')
-      nv.loadVolumes(volumeList)
-      nv.setSliceType(nv.sliceTypeMultiplanar)
+                  let urlParams = new URLSearchParams(window.location.search)
+          let files = urlParams.get('files')
+                  let host = urlParams.get('host')
+                  let port = urlParams.get('port')
+                  let inFiles = files.split(':')
+                  let volumeList = []
+                  let colors = ['red', 'green', 'blue']
+                  for (i=0; i<inFiles.length; i++) {
+                          volumeList.push({
+                                  url: `http://${host}:${port}/files?filename=${inFiles[i]}`,
+                                  colorMap: i < 1 ? 'gray' : colors[Math.floor(Math.random() * (3 - 0) + 0)]
+                          })
+                  }
+    const nv = new niivue.Niivue()
+    nv.attachTo('gl')
+    nv.loadVolumes(volumeList)
+    nv.setSliceType(nv.sliceTypeMultiplanar)
 
-    </script>
-  </body>
-</html>
-    """
-    # Trim off extra characters
-    return page[:-4] + '\n'
+  </script>
+</body>""")
+    return page
 
 
 def main():

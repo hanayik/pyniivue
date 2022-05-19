@@ -3,7 +3,7 @@ import sys
 import os
 import socket
 import webbrowser
-from flask import Flask, send_file, request
+from flask import Flask, send_file, request, send_from_directory
 
 # hide warning messages
 os.environ["WERKZEUG_RUN_MAIN"] = "true"
@@ -12,10 +12,10 @@ os.environ["WERKZEUG_RUN_MAIN"] = "true"
 app = Flask(__name__)
 
 # create the index route (default page)
-@app.route("/")
-def index():
+@app.route("/<path:path>")
+def index(path="index.html"):
     # send the web page if the base route is requested
-    return send_file('./index.html')
+    return send_from_directory('.', path)
 
 @app.route('/files')
 def files():

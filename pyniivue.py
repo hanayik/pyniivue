@@ -182,7 +182,6 @@ def head(title="basic multiplanar", initial_scale=1.0, margin=20):
     headstr = headstr.replace("INITIAL_SCALE", str(initial_scale))
     headstr = headstr.replace("TITLE", title)
     headstr = headstr.replace("MARGIN", str(margin))
-    print(headstr)
     return headstr[1:]
 
 

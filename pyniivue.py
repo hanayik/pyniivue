@@ -51,7 +51,7 @@ def main():
             port += 1
             continue
         # construct the URL to print in the console. The user will navigate to this URL in their browser
-        url = f"http://{host}:{port}/?host={host}&port={port}&files={':'.join(in_files_abs)}"
+        url = f"http://{host}:{port}/index.html?host={host}&port={port}&files={':'.join(in_files_abs)}"
         print('COPY THIS URL TO YOUR BROWSER: ', url)
         if not args.no_open:
             webbrowser.open(url)

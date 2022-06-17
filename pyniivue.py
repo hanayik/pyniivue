@@ -5,9 +5,6 @@ import socket
 import webbrowser
 from flask import Flask, send_file, request, send_from_directory
 
-# hide warning messages
-os.environ["WERKZEUG_RUN_MAIN"] = "true"
-
 # create an app instance
 app = Flask(__name__)
 
@@ -55,7 +52,7 @@ def main():
         print('COPY THIS URL TO YOUR BROWSER: ', url)
         if not args.no_open:
             webbrowser.open(url)
-        app.run(host, port, debug=False)
+        app.run(host, port)
         sys.exit(0)
 
 if __name__ == '__main__':

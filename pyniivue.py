@@ -3,10 +3,7 @@ import sys
 import os
 import socket
 import webbrowser
-from flask import Flask, send_file, request
-
-# hide warning messages
-os.environ["WERKZEUG_RUN_MAIN"] = "true"
+from flask import Flask, send_file, request, send_from_directory
 
 # create an app instance
 app = Flask(__name__)
@@ -19,10 +16,10 @@ DEFAULT_NOSCRIPT_MESSAGE = (
 )
 
 # create the index route (default page)
-@app.route("/")
-def index():
+@app.route("/<path:path>")
+def index(path="index.html"):
     # send the web page if the base route is requested
-    return send_file('./index.html')
+    return send_from_directory('.', path)
 
 @app.route('/files')
 def files():
@@ -270,11 +267,11 @@ def main():
             port += 1
             continue
         # construct the URL to print in the console. The user will navigate to this URL in their browser
-        url = f"http://{host}:{port}/?host={host}&port={port}&files={':'.join(in_files_abs)}"
+        url = f"http://{host}:{port}/index.html?host={host}&port={port}&files={':'.join(in_files_abs)}"
         print('COPY THIS URL TO YOUR BROWSER: ', url)
         if not args.no_open:
             webbrowser.open(url)
-        app.run(host, port, debug=False)
+        app.run(host, port)
         sys.exit(0)
 
 if __name__ == '__main__':
